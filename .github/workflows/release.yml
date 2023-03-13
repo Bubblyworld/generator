@@ -1,0 +1,33 @@
+name: Release
+on:
+  push:
+    tags: '*'
+jobs:
+  npm-release:
+    name: NPM Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - uses: guybedford/chomp-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm install
+      - run: chomp build
+      - run: ls dist
+
+  github-release:
+    name: GitHub Release
+    needs: npm-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Release Notes
+        uses: actions/github-script@v4.0.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.request(`POST /repos/${{ github.repository }}/releases`, {
+              tag_name: "${{ github.ref }}",
+              generate_release_notes: true
+            });

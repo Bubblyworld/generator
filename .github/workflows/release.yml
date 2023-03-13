@@ -13,13 +13,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm install
-      - run: chomp build
-      - run: ls dist
+      - run: npm publish --dry-run --tag ${{ github.ref }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
 
   github-release:
     name: GitHub Release
     needs: npm-release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - uses: ncipollo/release-action@v1
